@@ -1,4 +1,5 @@
 (defpackage #:cl-getopt
   (:use :cl
         :cffi)
-  (:export getopt))
+  (:export :getopt
+           :option-descriptions))
