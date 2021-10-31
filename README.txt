@@ -14,3 +14,5 @@ already familiar with how to run Lisp scripts in some other way, but
 if you're not then the general rule is to create an ordinary shell
 script and call SBCL with whatever arguments you like rather than
 exploiting the hash-bang script syntax.
+
+cl-getopt is in the public domain.
