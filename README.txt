@@ -3,7 +3,7 @@ cl-getopt is a Common Lisp CFFI wrapper to the libc utility
 
 See example.lisp for an example SBCL script using this library.  To
 run the example, follow the instructions at the top of the script to
-install it and run then
+install it and then run
 
 ./example.lisp
 
