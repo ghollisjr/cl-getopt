@@ -38,7 +38,7 @@ These are bound to the symbols supplied in the (argc argv) list."
 (defun option-descriptions (options)
   "Generates a description string for the list of options supplied."
   (flet ((safestr (s)
-           (string-downcase (string s))))
+           (string s)))
     (let* ((noptions (length options)))
       (with-output-to-string (s)
         (loop
