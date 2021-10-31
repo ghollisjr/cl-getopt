@@ -1,4 +1,4 @@
-(asdf:defsystem #:cl-options
+(asdf:defsystem #:cl-getopt
   :serial t
   :author "Gary Hollis"
   :license "Public Domain"
@@ -8,4 +8,4 @@
   :components
   ((:file "package")
    (:cffi-grovel-file "grovel")
-   (:file "cl-options")))
+   (:file "cl-getopt")))

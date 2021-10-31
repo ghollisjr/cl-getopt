@@ -1,6 +1,7 @@
-(in-package :cl-options)
+(in-package :cl-getopt)
 (include "getopt.h")
 
+(cvar ("optarg" +OPTARG+) :pointer)
 (cvar ("optind" +OPTIND+) :int)
 (cvar ("opterr" +OPTERR+) :int)
 (cvar ("optopt" +OPTOPT+) :int)

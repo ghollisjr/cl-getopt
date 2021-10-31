@@ -1,4 +1,6 @@
-(in-package :cl-options)
+(in-package :cl-getopt)
+
+(declaim (optimize (debug 3)))
 
 (define-foreign-library libc
   (:unix "libc.so.6")
@@ -64,11 +66,13 @@ These are bound to the symbols supplied in the (argc argv) list."
                 (when (not (equal i noptions))
                   (format s "~%"))))))))
 
-(defun ->keysym (x)
-  (intern (string-upcase (string x)) :keyword))
+(defun ->optionstr (x)
+  (string x)
+  ;; (intern (string-upcase (string x)) :keyword)
+  )
 
 (defun ->shortchar (x)
-  (elt (string-downcase (string x)) 0))
+  (elt (string x) 0))
 
 (defun option-shortarg (option)
   (when (getf option :short)
@@ -92,19 +96,34 @@ These are bound to the symbols supplied in the (argc argv) list."
                   (list s #\:))))))
     (coerce shorts 'string)))
 
-(defmacro with-foreign-longopts (array-binding options &body body)
+(defun short-char (x)
+  (if (characterp x)
+      (char-code x)
+      (char-code (elt (string x) 0))))
+
+(defmacro with-foreign-longopts ((foreign-array long-only-list)
+                                 options
+                                 &body body)
   (let* ((opts (gensym))
          (opt (gensym))
+         (short (gensym))
          (long (gensym))
+         (nlongopts (gensym))
          (argspec (gensym)))
-    `(let* ((,opts ,options))
-       (with-foreign-array (,array-binding
+    `(let* ((,opts ,options)
+            (,nlongopts 0)
+            (,long-only-list
+             (remove-if-not (lambda (x)
+                              (getf x :long))
+                            ,opts))
+            (,nlongopts (length ,long-only-list)))
+       (with-foreign-array (,foreign-array
                             (coerce
                              (loop
-                                for ,opt in ,opts
+                                for ,opt in ,long-only-list
                                 for ,long = (getf ,opt :long)
+                                for ,short = (getf ,opt :short)
                                 for ,argspec = (getf ,opt :argspec)
-                                when ,long
                                 collecting
                                   (let* ((,argspec (if ,argspec
                                                        ,argspec
@@ -118,9 +137,12 @@ These are bound to the symbols supplied in the (argc argv) list."
                                              +REQUIRED-ARGUMENT+)
                                             ((eq ,argspec :optional)
                                              +OPTIONAL-ARGUMENT+))
+                                          :val (if ,short
+                                                   (short-char ,short)
+                                                   0)
                                           :flag (null-pointer))))
                              'vector)
-                            (list :array '(:struct option) (length ,opts)))
+                            (list :array '(:struct option) ,nlongopts))
          ,@body))))
 
 (defmacro with-foreign-shortopts (shortopts-binding options
@@ -131,17 +153,25 @@ These are bound to the symbols supplied in the (argc argv) list."
                              (options->shortargs ,opts))
          ,@body))))
 
-(defun getopt (args options)
+(defun getopt (args options
+               &key
+                 (command-arg-present-p t))
   "Returns the values
 
 * option-values
 * remaining-arguments
 
 given the list of input arguments and options specification.
-option-values is a plist of the short or long argument keyword
-name (short if present) and the value of that option.
+option-values is hash-table of the short or long argument name
+string (short if present) and the value of that option.
 remaining-arguments is a list of the remaining arguments after
 processing the options.
+
+Note that if no argument is supplied to an option, whether because the
+argspec is :none or :optional, there will still be a list of NIL
+elements for each time the option was supplied without an argument.
+When the argspec is :required, some kind of value must be in the
+argument list for each time that option was supplied.
 
 options should be a list of plists, each plist of the form (&key long
 short argspec default documentation) where
@@ -149,10 +179,51 @@ short argspec default documentation) where
 * long is a symbol, string or character naming the long argument name.
 * short is a symbol, string or character naming the short argument name.
 * argspec is one of the values :none, :required, :optional.
-* default is a default value for options when no value is supplied.
-* description is a string to be used in an automatically generated argument description message."
-  (with-foreign-args (argc argv) args
-    (with-foreign-longopts longopts options
-      (with-foreign-shortopts shortopts options
-        ;; stub
-        ))))
+* description is a string to be used in an automatically generated argument description message.
+
+command-arg-present-p should be T whenever the argument list includes
+the command as the first element, and NIL when it's not included.  For
+general scripting use it should be present, but this option is
+included to allow easier use of getopt for parsing argument lists
+without the command being present."
+  (let* ((result-ht (make-hash-table :test 'equalp))
+         (args (if command-arg-present-p
+                   args
+                   (list* "command" args))))
+    (with-foreign-args (argc argv) args
+      (with-foreign-longopts (longopts long-only) options
+        (with-foreign-shortopts shortopts options
+          (with-foreign-object (longindex :int)
+            (setf +OPTIND+ 1)
+            (loop
+               for optchar = (c-getopt-long argc
+                                            argv
+                                            shortopts
+                                            longopts
+                                            longindex)
+               while (and (not (= optchar -1))
+                          (not (= optchar (char-code #\?))))
+               do
+                 (let* ((key
+                         (if (zerop optchar)
+                             ;; long only
+                             (let* ((spec
+                                     (elt long-only (mem-ref longindex :int))))
+                               (->optionstr (getf spec :long)))
+                             ;; short found
+                             (->optionstr (code-char optchar))))
+                        (val (convert-from-foreign +OPTARG+
+                                                   :string)))
+                   (push val (gethash key result-ht))))
+            (let* ((option-values
+                    (let* ((ht (make-hash-table :test 'equalp)))
+                      (loop
+                         for k being the hash-keys in result-ht
+                         for v being the hash-values in result-ht
+                         do (setf (gethash k ht)
+                                  (reverse v)))
+                      ht))
+                   (remaining-arguments
+                    (subseq args +OPTIND+)))
+              (values option-values
+                      remaining-arguments))))))))
