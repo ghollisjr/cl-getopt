@@ -163,9 +163,9 @@ These are bound to the symbols supplied in the (argc argv) list."
 
 given the list of input arguments and options specification.
 option-values is hash-table of the short or long argument name
-string (short if present) and the value of that option.
-remaining-arguments is a list of the remaining arguments after
-processing the options.
+string (short if present) and the list of all supplied values of that
+option in the order they were given.  remaining-arguments is a list of
+the remaining arguments after processing the options.
 
 Note that if no argument is supplied to an option, whether because the
 argspec is :none or :optional, there will still be a list of NIL
