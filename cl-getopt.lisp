@@ -1,6 +1,6 @@
 (in-package :cl-getopt)
 
-(declaim (optimize (debug 3)))
+(declaim (optimize (speed 3)))
 
 (define-foreign-library libc
   (:unix "libc.so.6")
