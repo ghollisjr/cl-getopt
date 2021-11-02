@@ -174,7 +174,7 @@ When the argspec is :required, some kind of value must be in the
 argument list for each time that option was supplied.
 
 options should be a list of plists, each plist of the form (&key long
-short argspec default documentation) where
+short argspec documentation) where
 
 * long is a symbol, string or character naming the long argument name.
 * short is a symbol, string or character naming the short argument name.
