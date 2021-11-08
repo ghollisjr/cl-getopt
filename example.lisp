@@ -54,6 +54,6 @@
                   for k being the hash-keys in options
                   for v being the hash-values in options
                   collecting (cons k v))))
-         (format t "Your message: ~a~%Your options: ~a~%"
+         (format t "Your message: ~s~%Your options: ~s~%"
                  remaining-arguments
                  alist))))))
