@@ -35,7 +35,9 @@ These are bound to the symbols supplied in the (argc argv) list."
                                   (list :array :string ,argc))
          ,@body))))
 
-(defun option-descriptions (options)
+(defun option-descriptions (options
+                            &key
+                              (column-width 20))
   "Generates a description string for the list of options supplied."
   (flet ((safestr (s)
            (string s)))
@@ -47,7 +49,10 @@ These are bound to the symbols supplied in the (argc argv) list."
            do (destructuring-bind (&key short long description
                                         &allow-other-keys)
                   option
-                (format s "~a~c~c~a"
+                (format s (concatenate 'string
+                                       "~a~2,"
+                                       (format nil "~a" column-width)
+                                       "T~a")
                         (cond
                           ((and short long)
                            (format nil "-~a, --~a:"
@@ -59,7 +64,6 @@ These are bound to the symbols supplied in the (argc argv) list."
                           (long
                            (format nil "--~a:"
                                    (safestr long))))
-                        #\tab #\tab
                         (if description
                             description
                             "not documented"))
