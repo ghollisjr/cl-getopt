@@ -15,4 +15,8 @@ if you're not then the general rule is to create an ordinary shell
 script and call SBCL with whatever arguments you like rather than
 exploiting the hash-bang script syntax.
 
+There is an "install" target in the Makefile if you want to place the
+cl-getopt SBCL core file somewhere it will be useful for other
+scripts, e.g. genpass (https://www.github.com/ghollisjr/genpass).
+
 cl-getopt is in the public domain.
