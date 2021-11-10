@@ -1,7 +1,7 @@
 #!/usr/bin/env -S sbcl --core sbcl-core/cl-getopt.core --script
 ;;;; Note that you need to
 ;;;;
-;;;; 0. Install SBCL.
+;;;; 0. Install SBCL and setup .sbclrc file (more info below)
 ;;;;
 ;;;; 1. Install quicklisp.
 ;;;; 
@@ -12,6 +12,28 @@
 ;;;; 3. Run "make" to generate the SBCL core.
 ;;;;
 ;;;; before this script will run properly.
+;;;;
+;;;; If you have never setup SBCL to handle hash-bang scripts, add
+;;;; this to ~/.sbclrc:
+;;;;
+;;;; (let ((script (and (second *posix-argv*)
+;;;;                    (probe-file (second *posix-argv*)))))
+;;;;   (when script
+;;;;     ;; Handle shebang-line
+;;;;     (set-dispatch-macro-character #\# #\!
+;;;;                                   (lambda (stream char arg)
+;;;;                                     (declare (ignore char arg))
+;;;;                                     (read-line stream)))
+;;;;     ;; Disable debugger
+;;;;     (setf *invoke-debugger-hook*
+;;;;           (lambda (condition hook)
+;;;;             (declare (ignore hook))
+;;;;             ;; Uncomment to get backtraces on errors
+;;;;             ;; (sb-debug:backtrace 20)
+;;;;             (format *error-output* "Error: ~A~%" condition)
+;;;;             (exit)))
+;;;;     (load script)
+;;;;     (exit)))
 (in-package :cl-getopt)
 
 (defparameter *options*
