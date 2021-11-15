@@ -190,7 +190,7 @@ the command as the first element, and NIL when it's not included.  For
 general scripting use it should be present, but this option is
 included to allow easier use of getopt for parsing argument lists
 without the command being present."
-  (let* ((result-ht (make-hash-table :test 'equalp))
+  (let* ((result-ht (make-hash-table :test 'equal))
          (args (if command-arg-present-p
                    args
                    (list* "command" args))))
@@ -220,7 +220,7 @@ without the command being present."
                                                    :string)))
                    (push val (gethash key result-ht))))
             (let* ((option-values
-                    (let* ((ht (make-hash-table :test 'equalp)))
+                    (let* ((ht (make-hash-table :test 'equal)))
                       (loop
                          for k being the hash-keys in result-ht
                          for v being the hash-values in result-ht
