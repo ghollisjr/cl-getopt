@@ -50,9 +50,9 @@ These are bound to the symbols supplied in the (argc argv) list."
                                         &allow-other-keys)
                   option
                 (format s (concatenate 'string
-                                       "~a~2,"
+                                       "~a~"
                                        (format nil "~a" column-width)
-                                       "T~a")
+                                       ",0T~a")
                         (cond
                           ((and short long)
                            (format nil "-~a, --~a:"
