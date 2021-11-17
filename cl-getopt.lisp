@@ -37,8 +37,12 @@ These are bound to the symbols supplied in the (argc argv) list."
 
 (defun option-descriptions (options
                             &key
-                              (column-width 20))
-  "Generates a description string for the list of options supplied."
+                              (column-width 20)
+                              (column-minspace 1))
+  "Generates a description string for the list of options supplied.
+
+column-width controls the width in characters of each option column.
+column-minspace controls the minimum space to pad between columns."
   (flet ((safestr (s)
            (string s)))
     (let* ((noptions (length options)))
@@ -52,7 +56,9 @@ These are bound to the symbols supplied in the (argc argv) list."
                 (format s (concatenate 'string
                                        "~a~"
                                        (format nil "~a" column-width)
-                                       ",0T~a")
+                                       ","
+                                       (format nil "~a" column-minspace)
+                                       "T~a")
                         (cond
                           ((and short long)
                            (format nil "-~a, --~a:"
